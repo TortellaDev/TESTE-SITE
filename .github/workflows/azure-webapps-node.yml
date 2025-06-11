@@ -1,0 +1,138 @@
+node -v
+npm -v
+mkdir backend
+cd backend
+npm init -y
+npm install express body-parser cors fs
+const express = require('express');
+const bodyParser = require('body-parser');
+const fs = require('fs');
+const cors = require('cors');
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+const DB_FILE = './db.json';
+
+function loadDB() {
+  return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+}
+
+function saveDB(data) {
+  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+}
+
+// Rota de cadastro
+app.post('/api/cadastro', (req, res) => {
+  const db = loadDB();
+  const { nome, email, senha } = req.body;
+
+  const existe = db.usuarios.find(u => u.email === email);
+  if (existe) return res.status(400).json({ erro: 'Usuário já cadastrado.' });
+
+  const novoUsuario = { id: Date.now(), nome, email, senha };
+  db.usuarios.push(novoUsuario);
+  saveDB(db);
+  res.status(201).json({ msg: 'Cadastrado com sucesso!' });
+});
+
+// Rota de login
+app.post('/api/login', (req, res) => {
+  const db = loadDB();
+  const { email, senha } = req.body;
+
+  const usuario = db.usuarios.find(u => u.email === email && u.senha === senha);
+  if (!usuario) return res.status(401).json({ erro: 'Credenciais inválidas.' });
+
+  res.json({ msg: 'Login bem-sucedido', usuario });
+});
+
+// Listar artistas
+app.get('/api/artistas', (req, res) => {
+  const db = loadDB();
+  res.json(db.artistas);
+});
+
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
+});
+{
+  "usuarios": [],
+  "artistas": [
+    {
+      "id": 1,
+      "nome": "DJ Aurora",
+      "descricao": "Mistura ritmos da Amazônia com batidas eletrônicas.",
+      "local": "São Paulo"
+    },
+    {
+      "id": 2,
+      "nome": "Luna Ribeiro",
+      "descricao": "Artista visual que trabalha com murais urbanos.",
+      "local": "Campinas"
+    }
+  ]
+}
+node server.js
+Servidor rodando em http://localhost:3000
+fetch('http://localhost:3000/api/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email, senha })
+})
+.then(res => res.json())
+.then(data => {
+  if (data.erro) {
+    alert('Erro: ' + data.erro);
+  } else {
+    alert('Login realizado');
+    // Redirecionar, salvar info, etc.
+  }
+});
+{npm install express body-parser cors
+
+  "usuarios": [],
+  "artistas": [
+    {
+      "id": 1,
+      "nome": "DJ Aurora",
+      "descricao": "Mistura ritmos da Amaz\u00f4nia com batidas eletr\u00f4nicas.",
+      "local": "S\u00e3o Paulo"
+    },
+    {
+      "id": 2,
+      "nome": "Luna Ribeiro",
+      "descricao": "Artista visual que trabalha com murais urbanos.",
+      "local": "Campinas"
+    }
+  ]
+}
+document.getElementById("login-form").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const email = document.getElementById("login-email").value;
+  const senha = document.getElementById("login-senha").value;
+
+  fetch("http://localhost:3000/api/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ email, senha })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.erro) {
+        alert("Erro: " + data.erro);
+      } else {
+        alert("Login realizado com sucesso!");
+        console.log("Usuário logado:", data.usuario);
+        // Redirecionar ou salvar o usuário no localStorage, por exemplo
+      }
+    })
+    .catch(err => {
+      console.error("Erro ao conectar:", err);
+    });
+});
